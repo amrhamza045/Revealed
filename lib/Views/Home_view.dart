@@ -1,7 +1,6 @@
 import 'package:college_project/Views/feedback.dart';
 import 'package:college_project/Views/history_view.dart';
 import 'package:college_project/Views/profile_view.dart';
-import 'package:college_project/Views/tmp.dart';
 import 'package:college_project/Views/upload_view.dart';
 import 'package:college_project/customWidgets/customAppBar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -21,8 +20,7 @@ class _HomeViewState extends State<HomeView> {
   int currentPageIndex = 0;
   final pages = [
     UploadView(),
-    TMPPage(),
-    //HistoryView(),
+    HistoryView(),
     const FeedbackView(),
     ProfileView(),
   ];

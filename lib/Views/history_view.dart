@@ -1,73 +1,94 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:college_project/Models/upload_History_Data.dart';
 import 'package:college_project/customWidgets/History_Card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class HistoryView extends StatefulWidget {
-  HistoryView({super.key});
-  final FirebaseAuth myAuth = FirebaseAuth.instance;
+  const HistoryView({super.key});
+
   @override
   State<HistoryView> createState() => _HistoryViewState();
 }
 
 class _HistoryViewState extends State<HistoryView> {
-  bool loaded = false;
-  List<HistoryData> userHistory = [];
+  List<DocumentSnapshot> uploads = [];
+  String filter = 'all';
 
   @override
   void initState() {
-    getHistory();
     super.initState();
+    fetchUploads();
+  }
+
+  Future<void> fetchUploads() async {
+    QuerySnapshot snapshot =
+        await FirebaseFirestore.instance.collection('user_uploads').get();
+    setState(() {
+      uploads = snapshot.docs;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return !loaded
-        ? const Center(child: CircularProgressIndicator.adaptive())
-        : ListView.builder(
-            itemCount: userHistory.length,
-            itemBuilder: (context, index) {
-              return HistoryCard(
-                imgPath: userHistory[index].imagePath,
-                title: userHistory[index].decision,
-                sub: userHistory[index].description,
-              );
-            },
-          );
+    List<DocumentSnapshot> filteredUploads = uploads.where((upload) {
+      if (filter == 'all' &&
+          upload['user'] == FirebaseAuth.instance.currentUser!.uid) {
+        return true;
+      } else {
+        return (((upload['prediction'] as String).trim() == filter) &&
+            upload['user'] == FirebaseAuth.instance.currentUser!.uid);
+      }
+    }).toList();
+
+    return Column(
+      children: [
+        Container(
+          height: 50,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              filterButton('All', 'all'),
+              filterButton('Real', 'Real'),
+              filterButton('Filtered', 'Filtered'),
+              filterButton('Generated', 'Fully Generated'),
+            ],
+          ),
+        ),
+        Expanded(
+            child: filteredUploads.isEmpty
+                ? ListView(children: const [
+                    HistoryCard(
+                      imgPath: 'https://via.placeholder.com/150',
+                      title: 'No uploads yet',
+                      sub: 'Upload an image to get started',
+                    ),
+                  ])
+                : ListView.builder(
+                    itemCount: filteredUploads.length,
+                    itemBuilder: (context, index) {
+                      return HistoryCard(
+                        imgPath: filteredUploads[index]['ImagePath'],
+                        title: filteredUploads[index]['prediction'],
+                        sub:
+                            '${filteredUploads[index]['percentage']}% confidence',
+                      );
+                    },
+                  ))
+      ],
+    );
   }
 
-  Future getHistory() async {
-    List<HistoryData> historyDataList = [];
-    try {
-      QuerySnapshot querySnapshot =
-          await FirebaseFirestore.instance.collection('user_uploads').get();
-
-      for (var doc in querySnapshot.docs) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        HistoryData historyData = HistoryData(
-          decision: data['prediction'],
-          imagePath: data['ImagePath'],
-          description: '${data['percentage']}% confidence',
-        );
-        if (data['user'] == widget.myAuth.currentUser!.uid) {
-          historyDataList.add(historyData);
-        }
-      }
-    } catch (e) {
-      print("Error fetching user uploads: $e");
-    }
-
-    setState(() {
-      userHistory = historyDataList;
-      loaded = true;
-      if (historyDataList.isEmpty) {
-        userHistory.add(HistoryData(
-          decision: 'No uploads yet',
-          imagePath: 'https://via.placeholder.com/150',
-          description: 'Upload an image to get started',
-        ));
-      }
-    });
+  Widget filterButton(String text, String category) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ElevatedButton(
+        onPressed: () {
+          setState(() {
+            filter = category;
+          });
+        },
+        child: Text(text),
+      ),
+    );
   }
 }
