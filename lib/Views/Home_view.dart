@@ -21,8 +21,8 @@ class _HomeViewState extends State<HomeView> {
   int currentPageIndex = 0;
   final pages = [
     UploadView(),
-    //TMPPage(),
-    HistoryView(),
+    TMPPage(),
+    //HistoryView(),
     const FeedbackView(),
     ProfileView(),
   ];
