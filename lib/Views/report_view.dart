@@ -42,7 +42,6 @@ class _ReportViewState extends State<ReportView> {
       actions: [
         InkWell(
           onTap: () {
-            
             Navigator.pop(context);
           },
           child: const Text(
@@ -104,7 +103,7 @@ class _ReportViewState extends State<ReportView> {
   }
 
   Future<File> sendImage(File image) async {
-    final url = Uri.parse('https://1c4a-197-59-151-81.ngrok-free.app/upload');
+    final url = Uri.parse('https://a9df-197-59-143-216.ngrok-free.app/upload');
     final request = http.MultipartRequest('POST', url);
     request.files.add(await http.MultipartFile.fromPath('file', image.path));
     final response = await request.send();

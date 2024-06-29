@@ -125,6 +125,7 @@ class _ResponseViewState extends State<ResponseView> {
       loaded = true;
       this.url = url;
       this.response = response;
+      print(response);
       prediction = json.decode(response)[0]['prediction'];
       percentage = double.parse(json.decode(response)[1]['Confidence Score']);
     });
@@ -145,7 +146,7 @@ class _ResponseViewState extends State<ResponseView> {
   }
 
   Future<String> sendImage(File image) async {
-    final url = Uri.parse('https://2561-197-134-49-46.ngrok-free.app/');
+    final url = Uri.parse('https://ada4-197-59-143-216.ngrok-free.app/');
     final request = http.MultipartRequest('POST', url);
 
     request.files.add(await http.MultipartFile.fromPath('file', image.path));
